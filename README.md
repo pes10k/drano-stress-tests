@@ -4,6 +4,7 @@ CasperJS stress tests for Drano
 
 Requirements
 ============
+ * Linux (the phantomjs file downloaded is a linux binary)
  * python
  * git
  * Unix stuff (tar, curl, etc.)
