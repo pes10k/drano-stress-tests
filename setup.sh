@@ -13,7 +13,6 @@ INSTALL_DEST="contrib"
 PHANTOM_HOME="$INSTALL_DEST/phantomjs"
 CASPER_HOME="$INSTALL_DEST/casperjs"
 
-
 if [ -d $INSTALL_DEST ]
 then
     echo " * Contrib dir '$INSTALL_DEST' already exists"
