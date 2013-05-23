@@ -6,6 +6,10 @@ var casper = require('casper').create();
 
 casper.start('http://drano-dev.uicbits.net/', function() {
     this.click("button[value='price']");
+
+    this.waitFor(function check() {
+        return !! this.getCurrentUrl().match("/price");
+    });
 });
 
 // Once we've submitted the pricing form, we need to wait for the progress
