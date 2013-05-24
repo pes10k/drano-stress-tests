@@ -19,6 +19,11 @@ var fs = require("fs"),
         }
         return response;
     },
+    snap_shot_error_response = function (response, page, message) {
+        page.render("error_" + (+new Date()) + ".png");
+        console.log("Printing error: " + "error_" + (+new Date()) + ".png");
+        return test_response(response, message, false);
+    },
     get_current_url = function (page) {
         return page.evaluate(function () {
             return document.location.href;
@@ -26,21 +31,33 @@ var fs = require("fs"),
     },
     num_visible = function (page, query) {
         return page.evaluate(function (a_query) {
-            return $(a_query).not(":hidden").length;
+            if (!window.$) {
+                return null;
+            } else {
+                return $(a_query).not(":hidden").length;
+            }
         }, query);
     },
-    wait_until = function (response, test_func, callback_func, timeout, max_attempts, current_attempt) {
+    wait_until = function (response, test_func, callback_func, page, timeout, max_attempts, current_attempt) {
 
         var secs = timeout || 500,
             max_a = max_attempts || 20,
-            current_a = current_attempt || 0;
+            current_a = current_attempt || 0,
+            rs = test_func();
 
-        if (test_func()) {
+        if (rs) {
 
             callback_func(response);
 
+        } else if (rs === null || rs === undefined) {
+
+            response['error'] = true;
+            response['render_error'] = true;
+            callback_func(snap_shot_error_response(response, page, "Error access full dom"));
+
         } else if (current_a > max_a) {
 
+            response['error'] = true;
             response['timeout_error'] = true;
             callback_func(response);
 
@@ -69,10 +86,15 @@ var fs = require("fs"),
             num_med = num_visible(this, ".well-warning li"),
             num_good = num_visible(this, ".well-success li"),
             price = this.evaluate(function () {
-                return $.trim($(".cash-money-row span").text());
+                var elm = document.querySelector(".cash-money-row span");
+                return (elm) ? elm.textContent : false;
             });
 
-        if (response.timeout_error) {
+        if ([num_bad, num_med, num_good, price].indexOf(null) !== -1 ||
+            [num_bad, num_med, num_good, price].indexOf(undefined) !== -1) {
+            callback_func(snap_shot_error_response(response, page, "Unable to query dom"));
+        }
+        else if (response.timeout_error) {
             callback_func(test_response(response, "Error waiting for the search to complete"));
         }
         else if (num_bad !== 1) {
@@ -95,7 +117,8 @@ var fs = require("fs"),
                     },
                     function (new_response) {
                         logout_complete.call(page, new_response, callback_func);
-                    }
+                    },
+                    page
                 );
             });
         }
@@ -107,7 +130,7 @@ var fs = require("fs"),
                 return num_visible(page, "#search-bar-container") === 0;
             };
 
-        if (response.timeout_error) {
+        if (response.timeout) {
 
             callback_func(test_response(response, "Error waiting for the search page to load"));
 
@@ -118,7 +141,8 @@ var fs = require("fs"),
                 test_func,
                 function (new_response) {
                     search_completed.call(page, new_response, callback_func);
-                }
+                },
+                page
             );
         }
     },
@@ -129,7 +153,7 @@ var fs = require("fs"),
                 return get_current_url(page).indexOf("/price") > -1;
             };
 
-        if (response.timeout_error) {
+        if (response.error) {
 
             callback_func(test_response(response, "Error waiting for home page to load"));
 
@@ -144,7 +168,8 @@ var fs = require("fs"),
                 test_func,
                 function (new_response) {
                     search_started.call(page, new_response, callback_func);
-                }
+                },
+                page
             );
         }
     },
@@ -178,7 +203,8 @@ var fs = require("fs"),
                     test_func,
                     function (new_response) {
                         click_pricing.call(page, new_response, callback_func);
-                    }
+                    },
+                    page
                 );
             }
         });
@@ -187,7 +213,7 @@ var fs = require("fs"),
 
         drano_test(
             function (new_response) {
-		console.log(request_index + ". Finished (" + (new_response['end_time'] - new_response['start_time']) + ") - " + (new_response['success'] ? 'SUCCESS' : 'ERROR'));
+                console.log(request_index + ". Finished (" + (new_response['end_time'] - new_response['start_time']) + ") - " + (new_response['success'] ? 'SUCCESS' : 'ERROR'));
                 callback(null, new_response);
             },
             request_index
