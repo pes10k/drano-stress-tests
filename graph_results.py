@@ -26,20 +26,21 @@ for root, dirs, files in os.walk(data_dir):
 
 average_run = []
 for i in range(0, len(runs[0])):
-    average_run.append(sum([a_run[i] for a_run in runs])/len(runs[0]))
+    average_run.append(sum([a_run[i] for a_run in runs])/len(runs))
 
+print average_run
 plot = Plot()
 
 for run in runs:
     line = Line()
     line.yValues = run
-    line.xValues = list(range(0, len(run[0])))
+    line.xValues = list(range(0, len(run)))
     plot.add(line)
 
 # Also add in the average line
 avg_line = Line()
 avg_line.yValues = average_run
-avg_line.xValues = list(range(0, len(run[0])))
+avg_line.xValues = list(range(0, len(run)))
 avg_line.color = 'r'
 plot.add(avg_line)
 

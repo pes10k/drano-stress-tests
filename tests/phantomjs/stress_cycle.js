@@ -31,8 +31,8 @@ var fs = require("fs"),
     },
     wait_until = function (response, test_func, callback_func, timeout, max_attempts, current_attempt) {
 
-        var secs = timeout || 1000,
-            max_a = max_attempts || 10,
+        var secs = timeout || 500,
+            max_a = max_attempts || 20,
             current_a = current_attempt || 0;
 
         if (test_func()) {
@@ -187,6 +187,7 @@ var fs = require("fs"),
 
         drano_test(
             function (new_response) {
+		console.log(request_index + ". Finished (" + (new_response['end_time'] - new_response['start_time']) + ") - " + (new_response['success'] ? 'SUCCESS' : 'ERROR'));
                 callback(null, new_response);
             },
             request_index
