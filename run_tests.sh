@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# First argument is the directory to pump results into
 # Second argument is number of tests per client (default is 10)
 # Third argument is number of clients (default is 1)
 
@@ -43,3 +42,7 @@ do
     echo $TEST_COMMAND
     $TEST_COMMAND &
 done
+
+wait
+
+echo "Tests completed and results written to $TEST_DEST"
