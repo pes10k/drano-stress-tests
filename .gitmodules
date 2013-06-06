@@ -1,3 +1,6 @@
 [submodule "submodules/async"]
 	path = submodules/async
 	url = https://github.com/caolan/async.git
+[submodule "contrib/async"]
+	path = contrib/async
+	url = git://github.com/caolan/async.git

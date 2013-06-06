@@ -1,3 +1,4 @@
 results/
-contrib/
+contrib/casperjs
+contrib/phantomjs*
 .DS_Store
