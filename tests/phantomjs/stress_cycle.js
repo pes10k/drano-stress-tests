@@ -2,7 +2,7 @@ var fs = require("fs"),
     pwd = fs.workingDirectory,
     system = require('system'),
     webpage = require('webpage'),
-    async = require(pwd + "/submodules/async/lib/async.js"),
+    async = require(pwd + "/contrib/async/lib/async.js"),
     num_args = system.args.length,
     num_runs = (num_args > 1) ? system.args[1] : 1,
     results_file = (num_args > 2) ? system.args[2] : "/dev/stdout",
@@ -79,7 +79,25 @@ var fs = require("fs"),
             callback_func(test_response(response, "Logout Complete.  Total Success!", true));
         }
     },
-    search_completed = function (response, callback_func) {
+    logout_begin = function (response, callback_func) {
+
+        var page = this;
+
+        this.open(drano_homepage + "logout", function (status) {
+
+            wait_until(
+                response,
+                function () {
+                    return num_visible(page, ".hero-unit") === 1;
+                },
+                function (new_response) {
+                    logout_complete.call(page, new_response, callback_func);
+                },
+                page
+            );
+        });
+    },
+    pricing_completed = function (response, callback_func) {
 
         var page = this,
             num_bad = num_visible(this, ".well-alert li"),
@@ -140,7 +158,7 @@ var fs = require("fs"),
                 response,
                 test_func,
                 function (new_response) {
-                    search_completed.call(page, new_response, callback_func);
+                    logout_begin.call(page, new_response, callback_func);
                 },
                 page
             );
@@ -150,7 +168,7 @@ var fs = require("fs"),
 
         var page = this,
             test_func = function () {
-                return get_current_url(page).indexOf("/price") > -1;
+                return get_current_url(page).indexOf("/search") > -1;
             };
 
         if (response.error) {
@@ -160,7 +178,7 @@ var fs = require("fs"),
         } else {
 
             page.evaluate(function () {
-                document.querySelector("button[value='price']").click();
+                document.querySelector("button[value='search']").click();
             });
 
             wait_until(

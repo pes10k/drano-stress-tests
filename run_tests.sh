@@ -3,6 +3,10 @@
 # First argument is number of tests per client (default is 10)
 # Second argument is number of clients (default is 1)
 
+WORK_DIR="`tr -dc "[:alpha:]" < /dev/urandom | head -c 8`"
+TMP_ROOT="/tmp/drano-stress-work-$WORK_DIR"
+mkdir $TMP_ROOT
+
 ROOT_DIR="`pwd`"
 PHANTOMJS_EXECUTABLE="$ROOT_DIR/contrib/phantomjs/bin/phantomjs"
 
@@ -33,12 +37,13 @@ fi
 for i in $(seq 1 $NUM_CLIENTS);
 do
     echo "Starting up client $i"
-    TEST_COMMAND="$PHANTOMJS_EXECUTABLE tests/phantomjs/stress_cycle.js $NUM_TESTS $DEST_DIR/result_$i.json"
-    # echo $TEST_COMMAND
+    TEST_COMMAND="$PHANTOMJS_EXECUTABLE --cookies-file=$TMP_ROOT/$i-$NUM_CLIENTS tests/phantomjs/stress_cycle.js $NUM_TESTS $DEST_DIR/result_$i.json"
     $TEST_COMMAND &
 done
 
 wait
+
+rm -Rf $TMP_ROOT 
 
 echo "Tests completed and results written to $DEST_DIR"
 echo "Generating graph"
